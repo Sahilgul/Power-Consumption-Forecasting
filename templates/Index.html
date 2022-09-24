@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smart Meter Analytics</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous" />
+  <style>
+    body {
+      background-image: url('static/background_homepage.png');
+    }
+
+    title,
+    h1 {
+      color: rgb(255, 255, 255);
+    }
+
+    .navbar {
+      background-color: rgb(38, 39, 41);
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <!-- <div class="container"> -->
+  <div class="navbar">
+    <h1>Power Consumption Forecasting</h1>
+
+    <a href="{{ url_for('upload_file') }}" class="btn btn-outline-success" style="
+                font-weight: bolder; color: rgb(255, 255, 255); font-size:large;
+                ;">
+      Dataset
+    </a>
+
+    <a href="/" class="btn btn-outline-success" style="
+                font-weight: bolder; color: rgb(255, 255, 255); 
+                font-size:large;
+                margin-right: 25%;">
+            Login</a>
+  </div>
+  <br>
+
+  <!-- <span class="border border-info"> -->
+  <h2 style="text-align:center; padding-top:10%">Predictive Models</h2>
+  <div class="col-md-12 text-center" style="padding-top:3% ;">
+    <a class="btn btn-primary" href="{{ url_for('lstm_model') }}">LSTM Model</a>
+  </div>
+  <div class="col-md-12 text-center" style="padding-top:3%">
+    <a class="btn btn-primary" href="{{ url_for('xgb_model') }}">XGBoost Model</a>
+  </div>
+
+  </div>
+
+  <br />
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8"
+    crossorigin="anonymous"></script>
+
+  <SCRIPT>
+    function ShowAndHide() {
+      var x = document.getElementById('txtCode');
+      if (x.style.display == 'none') {
+        x.style.display = 'block';
+      } else {
+        x.style.display = 'none';
+      }
+    }
+
+    function ShowAndHide2() {
+      var x = document.getElementById('csv_tb');
+      if (x.style.display == 'none') {
+        x.style.display = 'block';
+      } else {
+        x.style.display = 'none';
+      }
+    }
+  </SCRIPT>
+</body>
+
+</html>
