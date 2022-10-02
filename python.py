@@ -30,7 +30,7 @@ def upload_file():
         for i in request.files.getlist('file_name'):
             i.save(os.path.join(app.config['UPLOAD_PATH'],i.filename))
         return render_template('Index.html',msg='File Uploaded Successfully!')
-    return render_template("upload.html", msg="Please Upload Dataset for Next Process!")
+    return render_template("Index.html", msg="Please Upload Dataset for Next Process!")
 
 
 @app.route('/index', methods=['GET','POST'])
