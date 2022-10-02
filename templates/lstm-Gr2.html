@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LSTM Forecasting</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous" />
+    <link rel="icon" type="image/x-icon" href="static/favicon.png">
+  <style> 
+    .navbar { 
+      background-color: rgb(0, 0, 0);
+    }
+
+    body {
+      background-image: url('static/background_homepage.png');
+    }
+
+    .center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      width: 70%;
+    }
+    .caption{
+      font-size: xx-large;
+      color: rgb(255, 239, 16);
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="navbar">
+    <h2 style="color:white ;">Production Industry</h2>
+    <h3 style="color:white;">LSTM Model Graphs</h3>
+
+    <a href="{{ url_for('index') }}" class="btn btn-outline-success" style="
+                font-weight: bolder; color: rgb(255, 255, 255); font-size:large; margin-right: 1%;">
+      Home
+    </a>
+        <a class="btn btn-outline-success" style="
+        font-weight: bolder; color: rgb(255, 255, 255); font-size:large; margin-right: 10%;"
+         href="{{ url_for('lstm_model') }}">Previous Page</a>
+  </div>
+
+  <div class="col-md-12 text-center">
+    <BUTTON class="btn btn-primary" style="font-weight: bold;" ONCLICK="ShowAndHide()">Display Next Month Forecasting</BUTTON>
+    <!-- <BUTTON class="btn btn-primary" style="font-weight: bold;" ONCLICK="Show_Hide()">Display Maximum Demand</BUTTON> -->
+    <a class="btn btn-primary" href="{{ url_for('max_lstm') }}">Maximum Load</a>
+  </div>
+
+  <section id="txtCode" style="display:none">
+    <figure>
+      <img src="{{url_for('static', filename='charts_temp/chart4.png')}}" alt="chart2" style="width:80% ;" class="center">
+    </figure>
+  </section>
+
+  <!-- <section id="txt_Code" style="display:none">
+    <figure>
+      <img src="{{url_for('static', filename='charts_temp/chart5.png')}}" alt="chart2" style="width:80% ;" class="center">
+    </figure>
+  </section> -->
+
+
+  <SCRIPT>
+    function ShowAndHide() {
+      var x = document.getElementById('txtCode');
+      if (x.style.display == 'none') {
+        x.style.display = 'block';
+      } else {
+        x.style.display = 'none';
+      }
+    }
+
+    // function Show_Hide() {
+    //   var x = document.getElementById('txt_Code');
+    //   if (x.style.display == 'none') {
+    //     x.style.display = 'block';
+    //   } else {
+    //     x.style.display = 'none';
+    //   }
+    // }
+
+  </SCRIPT>
+
+</body>
+
+</html>

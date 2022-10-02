@@ -1,77 +1,20 @@
-from distutils.command.upload import upload
-import imp
+from crypt import methods
 import os
-import base64
-import numpy as np # linear algebra
+# from turtle import title
 import pandas as pd
 import matplotlib.pyplot as plt
-import itertools
-import warnings
-import xgboost as xgb
-
-from io import BytesIO
-from curses import flash
-from fileinput import filename
+# import xgboost as xgb
 from flask import Flask, render_template,redirect,url_for,request
-from werkzeug.utils import secure_filename
-from flask_wtf import FlaskForm
-from wtforms import FileField,SubmitField
-from wtforms.validators import InputRequired
-from xgboost import plot_importance, plot_tree
-from xgboost import XGBRegressor
-from sklearn.metrics import mean_squared_error, mean_absolute_error
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_agg import FigureCanvasAgg
+import pickle
+from flask import session
 
 
-def xgboost_clean(df):
-    split_date = '01-Jan-2015'
-    df_train = df.loc[df.index <= split_date].copy()
-    df_test = df.loc[df.index > split_date].copy()
 
-    def create_features(df, label=None):
-        """
-        Creates time series features from datetime index
-        """
-        df['date'] = df.index
-        df['hour'] = df['date'].dt.hour
-        df['dayofweek'] = df['date'].dt.dayofweek
-        df['quarter'] = df['date'].dt.quarter
-        df['month'] = df['date'].dt.month
-        df['year'] = df['date'].dt.year
-        df['dayofyear'] = df['date'].dt.dayofyear
-        df['dayofmonth'] = df['date'].dt.day
-        df['weekofyear'] = df['date'].dt.weekofyear
-        
-        X = df[['hour','dayofweek','quarter','month','year',
-            'dayofyear','dayofmonth','weekofyear']]
-        if label:
-            y = df[label]
-            return X, y
-        return X
-
-    X_train, y_train = create_features(df_train, label='Production_kWh')
-    X_test, y_test = create_features(df_test, label='Production_kWh')
-
-    reg = xgb.XGBRegressor(n_estimators=1000,objective='reg:linear',max_depth=3,learning_rate=0.01)
-    reg.fit(X_train, y_train,
-            eval_set=[(X_train, y_train), (X_test, y_test)],
-            early_stopping_rounds=50,
-            verbose=True
-            )
-
-    df_test['MW_Prediction'] = reg.predict(X_test)
-    df_all = pd.concat([df_test, df_train], sort=False)
-
-    futures = pd.date_range('2018-08-03','2018-09-03', freq='1h')
-    future_df = pd.DataFrame(index=futures)
-    future_df['isFuture'] = True
-
-
-    new_data = create_features(future_df)
-    new_data['MW_Prediction'] = reg.predict(new_data)
-    return new_data
-
+def max_load():
+    with open('static/files/new_data' , 'rb') as i:
+        new_data = pickle.load(i)
+    new_data1 = new_data.loc[(new_data['MW_Prediction'] >= 2571) & (new_data['MW_Prediction'] <= 2600)]
+    return new_data1
 
 app=Flask(__name__)
 
@@ -86,8 +29,8 @@ def upload_file():
     if request.method == 'POST':
         for i in request.files.getlist('file_name'):
             i.save(os.path.join(app.config['UPLOAD_PATH'],i.filename))
-        return render_template('upload.html',msg='File Uploaded Successfully!')
-    return render_template("upload.html", msg="Not Uploaded!")
+        return render_template('Index.html',msg='File Uploaded Successfully!')
+    return render_template("upload.html", msg="Please Upload Dataset for Next Process!")
 
 
 @app.route('/index', methods=['GET','POST'])
@@ -102,31 +45,65 @@ def lstm_model():
 def xgb_model():
     return render_template('xgb_model.html')
 
-@app.route('/show_lstm', methods=['GET','POST'])
-def show_lstm():
-    lstm_predictions = pd.read_csv('static/files/lstm_pred.csv')
-    y_test = pd.read_csv('static/files/y_test.csv')
-    plt.ioff()
-    fig =plt.figure(figsize=(16,8))
-    plt.plot(y_test,color='blue',label='Actual power consumption data')
-    plt.plot(lstm_predictions, alpha=0.7, color='orange',label='Predicted power consumption data')
-    plt.xlabel('Time')
-    plt.ylabel('Normalized power consumption scale')
-    plt.title('Predictions made by LSTM model')
-    plt.legend()
-    plt.savefig('static/charts_temp/chart2.png')
-    return render_template('show_lstm.html')
 
 @app.route('/show_xgb', methods=['GET','POST'])
 def show_xgb():
-    df = pd.read_csv('static/files/Malaysia_hourly.csv', index_col=[0], parse_dates=[0])
-    new_data = xgboost_clean(df)
+    with open('static/files/new_data' , 'rb') as i:
+        new_data = pickle.load(i)
     plt.ioff()
     fig =plt.figure(figsize=(16,8))
-    plt.plot(new_data['MW_Prediction'],color='blue')
-    plt.title('Future Predictions')
+    plt.plot(new_data['MW_Prediction'],color='green')
+    plt.xlabel('Date')
+    plt.ylabel('Normalized power consumption scale kWh')
+    plt.title('30 Days Future Predictions made by XGBoost Model')
     plt.savefig('static/charts_temp/chart1.png')
-    return render_template('show_xgbost.html')
+    return render_template('XGB-Gr1.html')
+
+@app.route('/show_max',methods=['GET','POST'])
+def show_max():
+    new_data1 = max_load()
+    plt.ioff()
+    fig =plt.figure(figsize=(16,8))
+    plt.plot(new_data1['MW_Prediction'],color='green',lw=5)
+    plt.xlabel('Date')
+    plt.ylabel('Normalized power consumption scale kWh')
+    plt.title('Maximum Demand')
+    plt.savefig('static/charts_temp/chart3.png')
+    return render_template('XGB-Gr2.html')
+
+@app.route('/forecast_lstm',methods=['GET','POST'])
+def forecast_lstm():
+    with open('static/files/next_predic' , 'rb') as i:
+        next_predic = pickle.load(i)
+    # new_data1 = max_load()
+    plt.ioff()
+    plt.figure(figsize=(20,10))
+    plt.plot(next_predic,color='blue')
+    plt.title('Next 30 Days Future Predictions [01/08/2018 - 01/09/2018]')
+    plt.xlabel('Dates',fontsize=20)
+    # plt.xticks(fontsize=15,rotation=45)
+    # plt.yticks(fontsize=15,rotation=45)
+    plt.ylabel('Prediction_kWh',fontsize=20)
+    plt.savefig('static/charts_temp/chart4.png')
+    return render_template('lstm-Gr2.html')
+
+@app.route('/max_lstm',methods=['GET','POST'])
+def max_lstm():
+    with open('static/files/next_predic' , 'rb') as i:
+        next_predic = pickle.load(i)
+    max_data = next_predic.loc[(next_predic['next_predicted_days_value'] >= 2571) & (next_predic['next_predicted_days_value'] <= 3500)]
+    plt.ioff()
+    plt.figure(figsize=(16,8))
+    plt.plot(max_data,color='blue',lw=5)
+    plt.title('Next 30 Days Future Predictions [01/08/2018 - 01/09/2018]',fontsize=20)
+    plt.xlabel('Dates',fontsize=20)
+    plt.ylim([0,3000])
+    plt.xticks(fontsize=18,rotation=45)
+    plt.yticks(fontsize=18,rotation=45)
+    plt.ylabel('Prediction_kWh',fontsize=20)
+    plt.savefig('static/charts_temp/chart5.png')
+    return render_template('lstm-Gr3.html')
+
+
 if __name__ =='__main__':
     app.run(debug=True)
-    
